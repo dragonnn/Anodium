@@ -58,7 +58,7 @@ anodize.keyboard.callbacks.register(|| {
 
 let weather = widget::text("");
 let date = widget::text("");
-let logger_box = box::new_raw(700, 330, 5, 35, layout::vertical());
+let logger_box = container::box(700, 330, 5, 35, layout::vertical());
 let logger = widget::logger();
 logger.c_debug = [255, 26, 255, 128];
 
@@ -76,23 +76,22 @@ anodize.keyboard.callbacks.register(|| {
 anodize.system.add_timeout(|| {
     let output = anodize.outputs[0];
     //output.set_wallpaper("./resources/wip-anodium-wallpaper.png");
-    
-    let box = box::new_raw(output.w, 30, 0, output.h - 30, layout::horizontal());
-    box.alpha = 0.0;
-    box.background = false;
-    box.scroll = false;
+
+    let panel = container::panel(30, layout::horizontal(), position::bottom());
+    panel.alpha = 0.0;
+    panel.background = false;
     let button = widget::button("Test");
     button.click(|| {
         anodize.log.info("button clicked!");
     });
 
-    box.add_widget(button.convert());
-    box.add_widget(weather.convert());
-    box.add_widget(date.convert());
+    panel.add_widget(button.convert());
+    panel.add_widget(weather.convert());
+    panel.add_widget(date.convert());
     
 
 
-    output.shell.add_box(box);
+    output.shell.add_panel(panel);
 
     output.shell.add_box(logger_box);
 
@@ -100,7 +99,7 @@ anodize.system.add_timeout(|| {
 
     let output = anodize.outputs[1];
     if output != () {
-        let box = box::new_raw(output.w, 30, 0, output.h - 30, layout::horizontal());
+        let box = container::box(output.w, 30, 0, output.h - 30, layout::horizontal());
         box.alpha = 0.0;
         box.background = false;
         box.scroll = false;
@@ -193,21 +192,20 @@ anodize.outputs.on_new(|output| {
 
     output.set_wallpaper("./resources/anocube.png");
 
-    let top_box = box::new_raw(output.w, 15, 0, 0, layout::horizontal());
-    top_box.scroll = false;
+    let top_panel = container::panel(15, layout::horizontal(), position::top());
     let fps_widget = widget::fps(output);
 
-    top_box.add_widget(fps_widget.convert());
+    top_panel.add_widget(fps_widget.convert());
 
     let current_workspace_widget = widget::current_workspace(output);
 
-    top_box.add_widget(current_workspace_widget.convert());
+    top_panel.add_widget(current_workspace_widget.convert());
 
     let output_geometry_widget = widget::output_geometry(output);
 
-    top_box.add_widget(output_geometry_widget.convert());
+    top_panel.add_widget(output_geometry_widget.convert());
 
-    output.shell.add_box(top_box);
+    output.shell.add_panel(top_panel);
 });
 
 
