@@ -48,8 +48,8 @@ impl OutputHandler for Anodium {
         renderer: &mut smithay::backend::renderer::gles2::Gles2Renderer,
         output: &Output,
         pointer_image: Option<&smithay::backend::renderer::gles2::Gles2Texture>,
-    ) {
-        self.render(renderer, output, pointer_image).ok();
+    ) -> Result<(), smithay::backend::SwapBuffersError> {
+        self.render(renderer, output, pointer_image)
     }
 }
 

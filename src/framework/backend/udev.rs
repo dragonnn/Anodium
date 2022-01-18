@@ -693,27 +693,29 @@ where
         );
 
         if let Err(err) = result {
-            warn!("Error during rendering: {:?}", err);
             let reschedule = match err {
-                SwapBuffersError::AlreadySwapped => false,
-                SwapBuffersError::TemporaryFailure(err) => !matches!(
-                    err.downcast_ref::<DrmError>(),
-                    Some(&DrmError::DeviceInactive)
-                        | Some(&DrmError::Access {
-                            source: drm::SystemError::PermissionDenied,
-                            ..
-                        })
-                ),
+                SwapBuffersError::AlreadySwapped => true,
+                SwapBuffersError::TemporaryFailure(err) => {
+                    warn!("Error during rendering: {:?}", err);
+                    !matches!(
+                        err.downcast_ref::<DrmError>(),
+                        Some(&DrmError::DeviceInactive)
+                            | Some(&DrmError::Access {
+                                source: drm::SystemError::PermissionDenied,
+                                ..
+                            })
+                    )
+                }
                 SwapBuffersError::ContextLost(err) => panic!("Rendering loop lost: {}", err),
             };
 
             if reschedule {
                 // debug!("Rescheduling");
 
-                // surface
-                //     .borrow_mut()
-                //     .render_timer
-                //     .add_timeout(Duration::from_millis(1000), (device_backend.dev_id, crtc));
+                surface.borrow_mut()._render_timer.add_timeout(
+                    std::time::Duration::from_millis(1000 / (60 / 2)),
+                    (device_backend.dev_id, crtc),
+                );
             }
         } else {
             // Send frame events so that client start drawing their next frame
@@ -793,7 +795,7 @@ where
     renderer.bind(dmabuf)?;
 
     // and draw to our buffer
-    handler.output_render(renderer, output, Some(pointer_image));
+    handler.output_render(renderer, output, Some(pointer_image))?;
 
     surface
         .surface

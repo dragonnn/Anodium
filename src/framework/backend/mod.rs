@@ -44,7 +44,7 @@ pub trait OutputHandler {
         renderer: &mut Gles2Renderer,
         output: &Output,
         pointer_image: Option<&Gles2Texture>,
-    );
+    ) -> Result<(), smithay::backend::SwapBuffersError>;
 }
 
 pub trait InputHandler {
