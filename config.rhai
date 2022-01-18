@@ -223,15 +223,11 @@ anodize.outputs.on_new(|output| {
     output.shell.add_panel(panel);
 });
 
-// anodize.system.add_timeout(|| {
-//     anodize.system.exec_read("cat /sys/class/hwmon/hwmon1/temp1_input", |o| {
-//         if o.status {
-//              //anodize.log.info("anodize hwmon end, got: " + o.output);
-//         }
-//     });
-//     return true;
-// }, 1000);
-
-
-
-// anodize.log.info("anodize initalize end");
+anodize.system.add_timeout(|| {
+     anodize.system.exec_read("cat /sys/class/hwmon/hwmon1/temp1_input", |o| {
+         if o.status {
+              //anodize.log.info("anodize hwmon end, got: " + o.output);
+         }
+     });
+     return true;
+}, 1000);

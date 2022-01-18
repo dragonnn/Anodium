@@ -139,7 +139,9 @@ where
                     let mut backend = backend.borrow_mut();
 
                     if backend.bind().is_ok() {
-                        handler.output_render(backend.renderer(), &output, None);
+                        handler
+                            .output_render(backend.renderer(), &output, None)
+                            .ok();
                         backend.submit(None, 1.0).unwrap();
                     }
 

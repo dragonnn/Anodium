@@ -244,7 +244,9 @@ where
                     }
 
                     let res: Result<(), ()> = {
-                        handler.output_render(&mut renderer, &surface_data.output, None);
+                        handler
+                            .output_render(&mut renderer, &surface_data.output, None)
+                            .ok();
                         Ok(())
                     };
 
