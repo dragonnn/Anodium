@@ -9,6 +9,7 @@ use std::{
     time::Instant,
 };
 
+use anodium_protocol::server::AnodiumProtocol;
 use smithay::{
     backend::renderer::gles2::{Gles2Renderer, Gles2Texture},
     desktop::{
@@ -35,7 +36,7 @@ use crate::{
     cli::AnodiumOptions,
     config::{eventloop::ConfigEvent, ConfigVM},
     framework::backend::BackendRequest,
-    framework::shell::ShellManager,
+    framework::{cursor::PointerElement, shell::ShellManager},
     output_manager::{Output, OutputManager},
     render,
     workspace::Workspace,
@@ -76,6 +77,7 @@ pub struct Anodium {
     pub config: ConfigVM,
 
     // Desktop
+    pub anodium_protocol: AnodiumProtocol,
     pub output_map: OutputManager,
 
     pub workspace: Workspace,
@@ -240,6 +242,8 @@ impl Anodium {
 
         let (seat, pointer, keyboard, cursor_status) = Self::init_seat(&display, seat_name.clone());
 
+        let (anodium_protocol, _global) = AnodiumProtocol::init(&mut display.borrow_mut());
+
         #[cfg(feature = "xwayland")]
         let xwayland = Self::init_xwayland_connection(&handle, &display);
 
@@ -284,6 +288,7 @@ impl Anodium {
 
             config,
 
+            anodium_protocol,
             output_map,
             workspace: Workspace::new(),
 
@@ -376,15 +381,18 @@ impl Anodium {
 
             if let Some(wl_cursor) = self.prepare_cursor_element(relative_location) {
                 elems.push(Box::new(wl_cursor));
+            } else if let Some(texture) = pointer_image {
+                elems.push(Box::new(PointerElement::new(
+                    texture.clone(),
+                    relative_location,
+                )));
             }
 
             if let Some(wl_dnd) = self.prepare_dnd_element(output_geometry.loc) {
                 elems.push(Box::new(wl_dnd));
             }
-
-            // TODO:
-            let _todo = pointer_image;
         }
+
         let render_result = self
             .workspace
             .render_output(renderer, output, 0, [0.1, 0.1, 0.1, 1.0], &elems)
