@@ -21,7 +21,7 @@ use smithay::{
         calloop::{self, channel::Sender, generic::Generic, Interest, LoopHandle, PostAction},
         wayland_server::{protocol::wl_surface::WlSurface, Display},
     },
-    utils::{Logical, Point},
+    utils::{Logical, Point, Rectangle},
     wayland::{
         data_device::{self, DataDeviceEvent},
         output::xdg::init_xdg_output_manager,
@@ -359,7 +359,7 @@ impl Anodium {
         output: &Output,
         age: usize,
         pointer_image: Option<&Gles2Texture>,
-    ) -> Result<(), smithay::backend::SwapBuffersError> {
+    ) -> Result<Option<Vec<Rectangle<i32, Logical>>>, smithay::backend::SwapBuffersError> {
         let output_geometry = self.workspace.output_geometry(output).unwrap();
 
         let mut elems: Vec<DynamicRenderElements<_>> = Vec::new();
@@ -399,14 +399,12 @@ impl Anodium {
             .render_output(renderer, output, age, [0.1, 0.1, 0.1, 1.0], &elems)
             .unwrap();
 
-        if let Some(render_result) = render_result {
-            if !render_result.is_empty() {
-                #[cfg(feature = "debug")]
-                output.tick_fps();
-            }
+        if render_result.is_some() {
+            #[cfg(feature = "debug")]
+            output.tick_fps();
         }
 
-        Ok(())
+        Ok(render_result)
     }
 }
 
